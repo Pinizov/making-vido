@@ -2,13 +2,27 @@
 """
 Example script for testing ComfyUI workflows with Replicate API
 This script can be used to test your workflow before integrating with n8n
+
+Requirements:
+    pip install requests
+
+Usage:
+    export REPLICATE_API_TOKEN="your_token_here"
+    python examples/replicate_api_example.py
 """
 
 import os
 import sys
 import json
 import time
-import requests
+
+try:
+    import requests
+except ImportError:
+    print("Error: 'requests' library not found.")
+    print("Install it with: pip install requests")
+    sys.exit(1)
+
 from typing import Optional, Dict, Any, List
 
 

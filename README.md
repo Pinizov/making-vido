@@ -20,6 +20,38 @@ We've tried to include many of the most popular model weights and custom nodes:
 
 Raise an issue to request more custom nodes or models, or use the `train` tab on Replicate to use your own weights (see below).
 
+## Automation & Integration
+
+### n8n Workflow Automation
+
+Integrate ComfyUI workflows into your n8n automation pipelines for hands-free AI image and video generation. Perfect for:
+
+- Automated social media content creation
+- Batch processing of images
+- Dynamic email header generation
+- E-commerce product image variations
+- Scheduled content generation
+
+**[View the complete n8n Integration Guide →](N8N_INTEGRATION.md)**
+
+Quick start:
+1. Get your Replicate API token from https://replicate.com/account/api-tokens
+2. Export your ComfyUI workflow in API format
+3. Use the provided [n8n workflow examples](examples/n8n_workflows/) as templates
+4. Configure HTTP Request nodes to call the Replicate API
+5. Automate your creative workflows!
+
+See [examples/n8n_workflows/](examples/n8n_workflows/) for ready-to-use templates.
+
+### Direct API Access
+
+Use the [Python example script](examples/replicate_api_example.py) to test and integrate the API:
+
+```bash
+export REPLICATE_API_TOKEN="your_token_here"
+python examples/replicate_api_example.py
+```
+
 ## How to use
 
 ### 1. Get your API JSON

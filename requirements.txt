@@ -68,3 +68,4 @@ alembic
 SQLAlchemy
 yarl>=1.18.0
 gguf
+yt-dlp>=2024.12.6

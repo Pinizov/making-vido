@@ -1,0 +1,357 @@
+{
+  "name": "ComfyUI Batch Image Processing via Replicate",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "schedule-node",
+      "name": "Schedule Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, prompt, negative_prompt FROM image_queue WHERE status = 'pending' LIMIT 10",
+        "options": {}
+      },
+      "id": "postgres-read",
+      "name": "Get Pending Images from DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [450, 300],
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "PostgreSQL Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "split-node",
+      "name": "Process Each Item",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build workflow JSON for each item\nconst item = $input.item.json;\nconst workflowJson = {\n  \"3\": {\n    \"inputs\": {\n      \"seed\": Math.floor(Math.random() * 1000000),\n      \"steps\": 30,\n      \"cfg\": 7.5,\n      \"sampler_name\": \"dpmpp_2m\",\n      \"scheduler\": \"karras\",\n      \"denoise\": 1,\n      \"model\": [\"4\", 0],\n      \"positive\": [\"6\", 0],\n      \"negative\": [\"7\", 0],\n      \"latent_image\": [\"5\", 0]\n    },\n    \"class_type\": \"KSampler\"\n  },\n  \"4\": {\n    \"inputs\": {\n      \"ckpt_name\": \"juggernautXL_juggernautX.safetensors\"\n    },\n    \"class_type\": \"CheckpointLoaderSimple\"\n  },\n  \"5\": {\n    \"inputs\": {\n      \"width\": 1024,\n      \"height\": 1024,\n      \"batch_size\": 1\n    },\n    \"class_type\": \"EmptyLatentImage\"\n  },\n  \"6\": {\n    \"inputs\": {\n      \"text\": item.prompt,\n      \"clip\": [\"4\", 1]\n    },\n    \"class_type\": \"CLIPTextEncode\"\n  },\n  \"7\": {\n    \"inputs\": {\n      \"text\": item.negative_prompt || \"blurry, low quality\",\n      \"clip\": [\"4\", 1]\n    },\n    \"class_type\": \"CLIPTextEncode\"\n  },\n  \"8\": {\n    \"inputs\": {\n      \"samples\": [\"3\", 0],\n      \"vae\": [\"4\", 2]\n    },\n    \"class_type\": \"VAEDecode\"\n  },\n  \"9\": {\n    \"inputs\": {\n      \"filename_prefix\": \"batch_\" + item.id,\n      \"images\": [\"8\", 0]\n    },\n    \"class_type\": \"SaveImage\"\n  }\n};\n\nreturn {\n  json: {\n    db_id: item.id,\n    prediction: {\n      version: \"latest\",\n      input: {\n        workflow_json: JSON.stringify(workflowJson),\n        output_format: \"webp\",\n        output_quality: 85,\n        randomise_seeds: false\n      }\n    }\n  }\n};"
+      },
+      "id": "code-prepare",
+      "name": "Prepare Workflow for Item",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/predictions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "replicateApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.prediction) }}",
+        "options": {}
+      },
+      "id": "http-create-prediction",
+      "name": "Create Prediction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1050, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "Replicate API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "seconds"
+      },
+      "id": "wait-processing",
+      "name": "Wait for Generation",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.urls.get }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "replicateApi",
+        "options": {}
+      },
+      "id": "http-check-status",
+      "name": "Check Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1",
+          "name": "Replicate API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equals",
+              "value2": "succeeded"
+            }
+          ]
+        }
+      },
+      "id": "if-complete",
+      "name": "Is Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE image_queue SET status = 'completed', output_url = '{{ $json.output[0] }}', updated_at = NOW() WHERE id = {{ $node[\"Prepare Workflow for Item\"].json.db_id }}",
+        "options": {}
+      },
+      "id": "postgres-update-success",
+      "name": "Update DB - Success",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1850, 200],
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "PostgreSQL Database"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "loop-wait",
+      "name": "Continue Processing",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1850, 400]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE image_queue SET status = 'failed', error = '{{ $json.error }}', updated_at = NOW() WHERE id = {{ $node[\"Prepare Workflow for Item\"].json.db_id }}",
+        "options": {}
+      },
+      "id": "postgres-update-failed",
+      "name": "Update DB - Failed",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1850, 500],
+      "credentials": {
+        "postgres": {
+          "id": "2",
+          "name": "PostgreSQL Database"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.status }}",
+              "operation": "equals",
+              "value2": "failed"
+            }
+          ]
+        }
+      },
+      "id": "if-failed",
+      "name": "Has Failed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1850, 600]
+    }
+  ],
+  "connections": {
+    "Schedule Daily": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Images from DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Images from DB": {
+      "main": [
+        [
+          {
+            "node": "Process Each Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Item": {
+      "main": [
+        [
+          {
+            "node": "Prepare Workflow for Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Workflow for Item": {
+      "main": [
+        [
+          {
+            "node": "Create Prediction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Prediction": {
+      "main": [
+        [
+          {
+            "node": "Wait for Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Generation": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Is Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Complete?": {
+      "main": [
+        [
+          {
+            "node": "Update DB - Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Has Failed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Failed?": {
+      "main": [
+        [
+          {
+            "node": "Update DB - Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Continue Processing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB - Success": {
+      "main": [
+        [
+          {
+            "node": "Process Each Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update DB - Failed": {
+      "main": [
+        [
+          {
+            "node": "Process Each Item",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continue Processing": {
+      "main": [
+        [
+          {
+            "node": "Wait for Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-01-01T00:00:00.000Z",
+  "versionId": "1"
+}

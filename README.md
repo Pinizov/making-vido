@@ -15,8 +15,8 @@ We recommend:
 
 We've tried to include many of the most popular model weights and custom nodes:
 
-- [View list of supported weights](https://github.com/replicate/cog-comfyui/blob/main/supported_weights.md)
-- [View list of supported custom nodes](https://github.com/replicate/cog-comfyui/blob/main/custom_nodes.json)
+- [View list of supported weights](https://github.com/Pinizov/making-vido/blob/main/supported_weights.md)
+- [View list of supported custom nodes](https://github.com/Pinizov/making-vido/blob/main/custom_nodes.json)
 
 Raise an issue to request more custom nodes or models, or use the `train` tab on Replicate to use your own weights (see below).
 
@@ -213,16 +213,16 @@ After running the training, you'll have your own ComfyUI model with your customi
 Clone this repository:
 
 ```sh
-git clone --recurse-submodules https://github.com/replicate/cog-comfyui.git
+git clone --recurse-submodules https://github.com/Pinizov/making-vido.git
 ```
 
-Run the [following script](https://github.com/replicate/cog-comfyui/blob/main/scripts/install_custom_nodes.py) to install all the custom nodes:
+Run the [following script](https://github.com/Pinizov/making-vido/blob/main/scripts/install_custom_nodes.py) to install all the custom nodes:
 
 ```sh
 ./scripts/install_custom_nodes.py
 ```
 
-You can view the list of nodes in [custom_nodes.json](https://github.com/replicate/cog-comfyui/blob/main/custom_nodes.json)
+You can view the list of nodes in [custom_nodes.json](https://github.com/Pinizov/making-vido/blob/main/custom_nodes.json)
 
 ### Running the Web UI from your Cog container
 

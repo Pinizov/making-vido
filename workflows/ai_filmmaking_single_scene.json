@@ -1,0 +1,226 @@
+{
+  "meta": {
+    "description": "AI Filmmaking - Single Scene Generation Template",
+    "version": "1.0.0",
+    "guide_reference": "AI-Filmmaking-Implementation-Guide.md Phase 4"
+  },
+  "last_node_id": 20,
+  "last_link_id": 30,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "CheckpointLoaderSimple",
+      "pos": [50, 50],
+      "size": {"0": 315, "1": 98},
+      "title": "Load Qwen Image Edit Model",
+      "properties": {},
+      "widgets_values": ["qwen_image_edit_q5.gguf"]
+    },
+    {
+      "id": 2,
+      "type": "LoraLoader",
+      "pos": [50, 200],
+      "size": {"0": 315, "1": 126},
+      "title": "Load Image Lightning LoRA",
+      "properties": {},
+      "widgets_values": [
+        "image_lightning_4step.safetensors",
+        0.8,
+        0.8
+      ]
+    },
+    {
+      "id": 3,
+      "type": "LoraLoader",
+      "pos": [50, 370],
+      "size": {"0": 315, "1": 126},
+      "title": "Load Next Scene LoRA",
+      "properties": {},
+      "widgets_values": [
+        "next_scene_lora.safetensors",
+        0.85,
+        0.85
+      ]
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "pos": [400, 50],
+      "size": {"0": 315, "1": 314},
+      "title": "Load Character Reference 1",
+      "properties": {},
+      "widgets_values": ["character_1_reference.jpg"]
+    },
+    {
+      "id": 5,
+      "type": "LoadImage",
+      "pos": [400, 400],
+      "size": {"0": 315, "1": 314},
+      "title": "Load Character Reference 2",
+      "properties": {},
+      "widgets_values": ["character_2_reference.jpg"]
+    },
+    {
+      "id": 6,
+      "type": "LoadImage",
+      "pos": [750, 50],
+      "size": {"0": 315, "1": 314},
+      "title": "Load Environment Reference",
+      "properties": {},
+      "widgets_values": ["environment_reference.jpg"]
+    },
+    {
+      "id": 7,
+      "type": "LoadImage",
+      "pos": [750, 400],
+      "size": {"0": 315, "1": 314},
+      "title": "Load Previous Scene (Optional)",
+      "properties": {},
+      "widgets_values": ["previous_scene.png"]
+    },
+    {
+      "id": 8,
+      "type": "CLIPTextEncode",
+      "pos": [1100, 50],
+      "size": {"0": 400, "1": 200},
+      "title": "Positive Prompt",
+      "properties": {},
+      "widgets_values": [
+        "Two characters at a restaurant table. Cinematic lighting. Professional film photography. Shot on RED camera."
+      ]
+    },
+    {
+      "id": 9,
+      "type": "CLIPTextEncode",
+      "pos": [1100, 300],
+      "size": {"0": 400, "1": 200},
+      "title": "Negative Prompt",
+      "properties": {},
+      "widgets_values": [
+        "blurry, low quality, distorted faces, bad hands, artifacts"
+      ]
+    },
+    {
+      "id": 10,
+      "type": "EmptyLatentImage",
+      "pos": [1100, 550],
+      "size": {"0": 315, "1": 106},
+      "title": "Empty Latent Image",
+      "properties": {},
+      "widgets_values": [1024, 576, 1]
+    },
+    {
+      "id": 11,
+      "type": "KSampler",
+      "pos": [1550, 50],
+      "size": {"0": 315, "1": 474},
+      "title": "KSampler (Scene Generation)",
+      "properties": {},
+      "widgets_values": [
+        42,
+        "fixed",
+        4,
+        1.0,
+        "dpmpp_2m_sde_gpu",
+        "karras",
+        1.0
+      ]
+    },
+    {
+      "id": 12,
+      "type": "VAEDecode",
+      "pos": [1900, 50],
+      "size": {"0": 210, "1": 46},
+      "title": "VAE Decode",
+      "properties": {}
+    },
+    {
+      "id": 13,
+      "type": "SaveImage",
+      "pos": [1900, 150],
+      "size": {"0": 315, "1": 270},
+      "title": "Save Scene Image",
+      "properties": {},
+      "widgets_values": ["scene_output"]
+    }
+  ],
+  "links": [
+    [1, 1, 0, 2, 0, "MODEL"],
+    [2, 2, 0, 3, 0, "MODEL"],
+    [3, 3, 0, 11, 0, "MODEL"],
+    [4, 1, 1, 8, 0, "CLIP"],
+    [5, 1, 1, 9, 0, "CLIP"],
+    [6, 8, 0, 11, 1, "CONDITIONING"],
+    [7, 9, 0, 11, 2, "CONDITIONING"],
+    [8, 10, 0, 11, 3, "LATENT"],
+    [9, 11, 0, 12, 0, "LATENT"],
+    [10, 1, 2, 12, 1, "VAE"],
+    [11, 12, 0, 13, 0, "IMAGE"]
+  ],
+  "groups": [
+    {
+      "title": "Model Loading",
+      "bounding": [30, 20, 360, 500],
+      "color": "#3f789e"
+    },
+    {
+      "title": "Reference Images",
+      "bounding": [380, 20, 700, 720],
+      "color": "#8f5e3f"
+    },
+    {
+      "title": "Prompts & Generation",
+      "bounding": [1080, 20, 450, 660],
+      "color": "#5e8f3f"
+    },
+    {
+      "title": "Scene Output",
+      "bounding": [1530, 20, 420, 520],
+      "color": "#8f3f5e"
+    }
+  ],
+  "config": {
+    "extra": {
+      "ds": {
+        "scale": 1.0,
+        "offset": [0, 0]
+      }
+    }
+  },
+  "version": 0.4,
+  "widget_values_mapping": {
+    "checkpoint": "qwen_image_edit_q5.gguf",
+    "lora_lightning": "image_lightning_4step.safetensors",
+    "lora_next_scene": "next_scene_lora.safetensors",
+    "width": 1024,
+    "height": 576,
+    "steps": 4,
+    "cfg": 1.0,
+    "sampler": "dpmpp_2m_sde_gpu",
+    "scheduler": "karras"
+  },
+  "instructions": {
+    "setup": [
+      "1. Download Qwen Image Edit model (Q5 GGUF recommended)",
+      "2. Download Image Lightning LoRA (4-step version)",
+      "3. Download Next Scene LoRA from HuggingFace",
+      "4. Place models in appropriate ComfyUI/models directories"
+    ],
+    "usage": [
+      "1. Load character reference images (2-3 characters)",
+      "2. Load environment reference image",
+      "3. Optional: Load previous scene for continuity",
+      "4. Write detailed scene prompt in Positive Prompt node",
+      "5. Set seed for reproducibility",
+      "6. Queue prompt and generate scene",
+      "7. Review output and iterate if needed"
+    ],
+    "best_practices": [
+      "Use specific character names in prompts",
+      "Describe camera angles explicitly (e.g., 'over-the-shoulder')",
+      "Include lighting details (e.g., 'cinematic lighting', 'warm candlelight')",
+      "Maintain consistent seed for reproducibility",
+      "Reference previous scenes for continuity"
+    ]
+  }
+}

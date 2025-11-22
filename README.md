@@ -5,6 +5,28 @@ Run ComfyUI workflows on Replicate:
 - https://replicate.com/comfyui/any-comfyui-workflow
 - https://replicate.com/comfyui/any-comfyui-workflow-a100
 
+## 🎬 NEW: AI Filmmaking Automation
+
+This repository now includes a complete **AI Filmmaking Automation** system for creating cinematic AI-generated videos with:
+- ✨ Character consistency across scenes
+- 🎥 Camera angle transitions
+- 🌍 360° environment management
+- 🎞️ Automated video generation
+- 📊 Quality control and assessment
+
+**Quick Start:** See [AI_FILMMAKING_QUICKSTART.md](AI_FILMMAKING_QUICKSTART.md)  
+**Complete Guide:** See [AI-Filmmaking-Implementation-Guide.md](AI-Filmmaking-Implementation-Guide.md)
+
+### AI Filmmaking Features
+
+- **Scene Generation**: Create consistent scenes with character and environment references
+- **Prompt Building**: Cinematic prompt engineering with camera angles and lighting
+- **Environment Management**: 360° panoramic environments with camera-specific views
+- **Video Pipeline**: Image-to-video generation with motion interpolation
+- **Quality Control**: Automated quality assessment and improvement recommendations
+
+---
+
 We recommend:
 
 - trying it on the website with your favorite workflow and making sure it works

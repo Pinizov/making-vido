@@ -9,7 +9,6 @@ from typing import Dict, Optional, Tuple, List
 from pathlib import Path
 from PIL import Image
 import json
-import math
 
 
 class EnvironmentManager:

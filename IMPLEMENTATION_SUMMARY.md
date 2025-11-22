@@ -112,7 +112,7 @@ November 22, 2025
 - Organized node groups for clarity
 - Comprehensive setup and usage instructions
 
-### 3. Command-Line Tools (2 CLI tools, ~14KB)
+### 3. Command-Line Tool (1 CLI tool, 7.5KB)
 
 #### `filmmaking_cli.py` (7.5KB)
 - User-friendly CLI with dependency checking
@@ -123,11 +123,6 @@ November 22, 2025
   - `list-cameras` - Show available camera angles
   - `list-lighting` - Show available lighting setups
 - Built-in help and examples
-
-#### `filmmaking.py` (6.8KB)
-- Alternative CLI implementation
-- Similar functionality with extended options
-- Debug mode support
 
 ### 4. Documentation (3 docs, ~94KB)
 
@@ -199,8 +194,7 @@ making-vido/
 │
 ├── AI-Filmmaking-Implementation-Guide.md  # Comprehensive guide
 ├── AI_FILMMAKING_QUICKSTART.md           # Quick start guide
-├── filmmaking_cli.py                     # CLI tool (with dep check)
-├── filmmaking.py                         # Alternative CLI
+├── filmmaking_cli.py                     # CLI tool
 ├── test_structure.py                     # Structure tests
 └── test_ai_filmmaking.py                 # Module tests
 ```
@@ -360,7 +354,7 @@ Potential future improvements:
 Successfully implemented a complete, production-ready AI Filmmaking Automation system with:
 - **7 core Python modules** for scene generation, reference management, environment control, video generation, prompt engineering, and quality control
 - **1 ComfyUI workflow template** for single scene generation
-- **2 CLI tools** for easy command-line access
+- **1 CLI tool** for easy command-line access
 - **3 comprehensive documentation files** (94KB total)
 - **Complete restaurant proposal example** with 5 scenes
 
@@ -368,6 +362,6 @@ The system is modular, extensible, and ready for use in creating cinematic AI-ge
 
 ---
 
-**Total Implementation Size**: ~160KB of code, templates, and documentation  
+**Total Implementation Size**: ~153KB of code, templates, and documentation  
 **Development Time**: Single session  
 **Status**: ✅ Complete and ready for use
